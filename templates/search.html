@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <form method="get" class="card">
+    <label for="query">Content query</label>
+    <input id="query" name="q" value="{{ query }}"
+           maxlength="2000" class="w-full" required>
+
+    <label for="mode">Retrieval method</label>
+    <select id="mode" name="mode">
+      <option value="hybrid" {% if mode == "hybrid" %}selected{% endif %}>
+        Hybrid
+      </option>
+      <option value="bm25" {% if mode == "bm25" %}selected{% endif %}>
+        BM25 only
+      </option>
+      <option value="semantic" {% if mode == "semantic" %}selected{% endif %}>
+        Semantic only
+      </option>
+    </select>
+
+    <details class="document-picker">
+      <summary>Restrict search to selected documents</summary>
+      <p>No selection searches the entire collection.</p>
+
+      <fieldset>
+        <legend>Documents to search</legend>
+        <div class="document-options">
+          {% for doc in documents %}
+            <label for="search-doc-{{ doc.pk }}">
+              <input id="search-doc-{{ doc.pk }}" type="checkbox"
+                     name="documents" value="{{ doc.pk }}"
+                     {% if doc.pk in selected %}checked{% endif %}>
+              {{ doc.filename }}
+            </label>
+          {% empty %}
+            <p>No documents available.</p>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </details>
+
+    <button type="submit">Search contents</button>
+  </form>
+
+  {% if error %}
+    <p class="error" role="alert">Search failed: {{ error }}</p>
+  {% endif %}
+
+  {% for result in results %}
+    <article class="card">
+      <h2>
+        <a href="{{ result.url }}">
+          {{ result.chunk.document.filename }}
+          {% if result.stale %}
+            — inspect indexing status
+          {% elif result.chunk.document.format == "pdf" %}
+            — page {{ result.chunk.page }}
+          {% else %}
+            — LaTeX source
+          {% endif %}
+        </a>
+      </h2>
+
+      {% if result.stale %}
+        <p class="warning">
+          This passage belongs to a previously indexed file version.
+          Finish or retry ingestion before relying on it.
+        </p>
+      {% endif %}
+
+      {% if result.chunk.heading %}
+        <p>Section: {{ result.chunk.heading }}</p>
+      {% endif %}
+
+      <p>
+        Rank-fusion score: {{ result.score|floatformat:5 }}.
+        This is not a confidence probability.
+      </p>
+
+      <pre class="source-text">{{ result.context }}</pre>
+    </article>
+  {% empty %}
+    {% if query and not error %}
+      <p>No passages returned.</p>
+    {% endif %}
+  {% endfor %}
+{% endblock %}

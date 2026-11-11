@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <p>
+    {{ document_count }} documents;
+    {{ chunk_count }} indexed passages.
+  </p>
+
+  <p><a href="/status/">Refresh processing status</a></p>
+  <p><a href="http://localhost:3000/">Open Grafana monitoring</a></p>
+
+  <form method="post" action="/api/benchmark/" class="card">
+    {% csrf_token %}
+
+    <h2>Run a timing benchmark</h2>
+
+    <label for="query">Benchmark query</label>
+    <input id="query" name="query"
+           value="definitions and assumptions"
+           maxlength="2000" required>
+
+    <label for="repeats">Repeats, maximum 10</label>
+    <input id="repeats" name="repeats"
+           type="number" min="1" max="10" value="1" required>
+
+    <button type="submit">Run benchmark and display JSON</button>
+
+    <p>
+      Start with one repeat. Multiple slow operations may exceed the
+      web request timeout. Results appear as JSON in the browser.
+    </p>
+  </form>
+
+  <section class="card">
+    <h2>Persisted operation timings</h2>
+
+    {% for row in rows %}
+      <p>
+        {{ row.kind }}: {{ row.count }} operations;
+        mean {{ row.average|floatformat:3 }} seconds.
+      </p>
+    {% empty %}
+      <p>No timings recorded yet.</p>
+    {% endfor %}
+  </section>
+
+  <section class="card">
+    <h2>Recently updated documents</h2>
+    <p>Showing at most 100.</p>
+
+    {% for doc in documents %}
+      <article class="status-entry">
+        <h3>
+          <a href="/document/{{ doc.pk }}/">{{ doc.filename }}</a>
+        </h3>
+
+        <p>
+          Upload/storage: {{ doc.upload_state }}.
+          Ingestion: {{ doc.state }} — {{ doc.progress }}%.
+        </p>
+
+        {% if doc.error %}
+          <p class="error">{{ doc.error }}</p>
+        {% endif %}
+      </article>
+    {% empty %}
+      <p>No documents imported yet.</p>
+    {% endfor %}
+  </section>
+
+  <section class="card">
+    <h2>Recent timing events</h2>
+    <p>Showing at most 50.</p>
+
+    {% for timing in timings %}
+      <p>
+        {{ timing.created }} · {{ timing.kind }} ·
+        {{ timing.seconds|floatformat:3 }} seconds ·
+        {% if timing.success %}success{% else %}failure{% endif %}
+        {% if timing.detail %} · {{ timing.detail }}{% endif %}
+      </p>
+    {% empty %}
+      <p>No timing events recorded yet.</p>
+    {% endfor %}
+  </section>
+{% endblock %}

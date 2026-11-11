@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply leading-relaxed;
+}
+
+h2 {
+  @apply text-xl font-semibold mt-4 mb-2;
+}
+
+h3 {
+  @apply text-lg font-semibold mb-2;
+}
+
+p {
+  @apply my-2;
+}
+
+a {
+  @apply text-blue-800 underline;
+  overflow-wrap: anywhere;
+}
+
+label {
+  @apply block font-medium mt-3 mb-1;
+}
+
+input:not([type="checkbox"]),
+select,
+textarea {
+  @apply border border-slate-500 rounded p-2 bg-white text-slate-900;
+  max-width: 100%;
+}
+
+input[type="checkbox"] {
+  @apply mr-2;
+}
+
+button {
+  @apply rounded bg-blue-800 text-white px-3 py-2 mt-3;
+}
+
+button:hover {
+  @apply bg-blue-900;
+}
+
+:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 3px;
+}
+
+.card {
+  @apply bg-white border border-slate-300 rounded p-4 my-4;
+  overflow-wrap: anywhere;
+}
+
+.error {
+  @apply text-red-800;
+}
+
+.warning {
+  @apply text-amber-900;
+}
+
+.source-text {
+  @apply whitespace-pre-wrap my-3;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.answer-text {
+  @apply whitespace-pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.status-entry {
+  @apply border-b border-slate-300 py-3;
+}
+
+.document-picker {
+  @apply my-4;
+}
+
+.document-picker summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.document-options {
+  max-height: 20rem;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.skip-link:focus {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  width: auto;
+  height: auto;
+  z-index: 100;
+  @apply bg-white text-blue-800 p-3 border border-blue-800;
+}

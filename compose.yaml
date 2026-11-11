@@ -1,0 +1,83 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: localrag
+      POSTGRES_USER: localrag
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db-init.sql:/docker-entrypoint-initdb.d/01-vector.sql:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U localrag -d localrag
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_NUM_PARALLEL: 1
+    volumes:
+      - models:/root/.ollama
+    restart: unless-stopped
+
+  web:
+    build: .
+    env_file: .env
+    ports:
+      - "127.0.0.1:1337:8000"
+    volumes:
+      - ${DOCUMENT_ROOT:-./documents}:/data
+      - ${IMPORT_ROOT:-./imports}:/imports:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+
+  worker:
+    build: .
+    env_file: .env
+    command:
+      - python
+      - manage.py
+      - worker
+    volumes:
+      - ${DOCUMENT_ROOT:-./documents}:/data
+      - ${IMPORT_ROOT:-./imports}:/imports:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheusdata:/prometheus
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./monitoring/datasources.yml:/etc/grafana/provisioning/datasources/localrag.yml:ro
+      - ./monitoring/dashboards.yml:/etc/grafana/provisioning/dashboards/localrag.yml:ro
+      - ./monitoring/dashboard.json:/var/lib/grafana/dashboards/localrag.json:ro
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  models:
+  prometheusdata:
+  grafanadata:

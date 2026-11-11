@@ -1,0 +1,107 @@
+{
+  "uid": "localrag",
+  "title": "LocalRAG",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Documents",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "localrag-prometheus"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {"refId": "A", "expr": "localrag_documents"}
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Ingestion states",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "localrag-prometheus"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "localrag_document_states",
+          "legendFormat": "{{state}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Mean ingestion seconds — all attempts",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "localrag-prometheus"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "localrag_operation_seconds_sum{kind=\"ingestion\"} / clamp_min(localrag_operation_count{kind=\"ingestion\"}, 1)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Successful ingestions over previous hour",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "localrag-prometheus"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "clamp_min(delta(localrag_operation_count{kind=\"ingestion\"}[1h]) - delta(localrag_operation_failures{kind=\"ingestion\"}[1h]), 0)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Mean search seconds — all attempts",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "localrag-prometheus"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "localrag_operation_seconds_sum{kind=\"search\"} / clamp_min(localrag_operation_count{kind=\"search\"}, 1)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Cumulative timing-target exceedances",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "localrag-prometheus"
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "localrag_sla_exceedances",
+          "legendFormat": "{{kind}}"
+        }
+      ]
+    }
+  ]

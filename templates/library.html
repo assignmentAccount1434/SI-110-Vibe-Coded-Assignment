@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% if notices %}
+    <section aria-label="Import results" role="status">
+      {% for notice in notices %}
+        <p class="card">{{ notice }}</p>
+      {% endfor %}
+    </section>
+  {% endif %}
+
+  <form method="get" class="card">
+    <h2>Find documents</h2>
+
+    <label for="q">Filename or title</label>
+    <input id="q" name="q" value="{{ query }}">
+
+    <label for="filter-category">Category</label>
+    <input id="filter-category" name="category" value="{{ category }}">
+
+    <label for="format">Format</label>
+    <select id="format" name="format">
+      <option value="">All formats</option>
+      <option value="pdf" {% if file_format == "pdf" %}selected{% endif %}>
+        PDF
+      </option>
+      <option value="tex" {% if file_format == "tex" %}selected{% endif %}>
+        LaTeX
+      </option>
+    </select>
+
+    <button type="submit">Filter library</button>
+  </form>
+
+  <form method="post" enctype="multipart/form-data" class="card">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="upload">
+
+    <h2>Upload documents</h2>
+
+    <label for="files">PDF or UTF-8 LaTeX files</label>
+    <input id="files" type="file" name="files"
+           multiple accept=".pdf,.tex" required
+           aria-describedby="upload-help">
+
+    <p id="upload-help">
+      Maximum 250 MiB per file. Scanned-PDF OCR is not included.
+      Uploading a file with the same filename replaces that logical document.
+    </p>
+
+    <label for="upload-category">Category</label>
+    <input id="upload-category" name="category" maxlength="100">
+
+    <button type="submit">Store files and queue ingestion</button>
+
+    <p>
+      File transfer and storage finish before background extraction and
+      indexing. Check Index status for progress and failures.
+    </p>
+  </form>
+
+  <form method="post" class="card">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="import">
+
+    <h2>Import a local directory</h2>
+
+    <label for="directory">Subdirectory under /imports</label>
+    <input id="directory" name="directory"
+           aria-describedby="directory-help">
+
+    <p id="directory-help">
+      Leave blank to import the configured mount's root.
+      Files are copied into managed storage.
+    </p>
+
+    <label for="import-category">Category</label>
+    <input id="import-category" name="category" maxlength="100">
+
+    <button type="submit">Copy files and queue ingestion</button>
+
+    <p>
+      Copying is synchronous. For large collections use the command-line
+      import script supplied in Group 5.
+    </p>
+  </form>
+
+  <h2>Documents</h2>
+  <p>{{ matching_count }} matches. Showing at most 200.</p>
+
+  {% for doc in documents %}
+    <article class="card">
+      <h3>
+        <a href="/document/{{ doc.pk }}/">{{ doc.title }}</a>
+      </h3>
+
+      <p>
+        {{ doc.filename }} · {{ doc.format }} ·
+        Category: {{ doc.category|default:"Uncategorized" }}
+      </p>
+
+      <p>Imported: {{ doc.created }}</p>
+
+      <p>
+        Upload/storage: {{ doc.upload_state }}.
+        Ingestion: {{ doc.state }} — {{ doc.progress }}%.
+      </p>
+
+      {% if doc.error %}
+        <p class="error">Processing error: {{ doc.error }}</p>
+      {% endif %}
+    </article>
+  {% empty %}
+    <p>No matching documents.</p>
+  {% endfor %}
+{% endblock %}

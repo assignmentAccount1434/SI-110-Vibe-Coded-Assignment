@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% if notice %}<p role="status">{{ notice }}</p>{% endif %}
+
+  <section class="card" aria-label="Document information">
+    <p>Filename: {{ doc.filename }}</p>
+    <p>Format: {{ doc.format }}</p>
+
+    {% if doc.format == "pdf" %}
+      <p>PDF pages: {{ doc.pages }}</p>
+    {% else %}
+      <p>PDF page mapping is unavailable for LaTeX source.</p>
+    {% endif %}
+
+    <p>Indexed passages: {{ chunks }}</p>
+    <p>Stored: {{ doc.created }}. Updated: {{ doc.updated }}.</p>
+
+    <p>
+      Upload/storage: {{ doc.upload_state }}.
+      Ingestion: {{ doc.state }} — {{ doc.progress }}%.
+    </p>
+
+    <p>Last ingestion attempt: {{ doc.seconds|floatformat:2 }} seconds.</p>
+
+    {% if doc.sha256 != doc.indexed_sha256 %}
+      <p class="warning">
+        The current stored file is not fully indexed. Existing passages,
+        if present, represent its previously indexed version.
+      </p>
+    {% endif %}
+
+    {% if doc.error %}
+      <p class="error">Processing error: {{ doc.error }}</p>
+    {% endif %}
+
+    {% if doc.warning %}
+      <p class="warning">{{ doc.warning }}</p>
+    {% endif %}
+
+    <a href="/source/{{ doc.pk }}/">Open original file</a>
+  </section>
+
+  <form method="post" class="card">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="metadata">
+
+    <h2>Edit metadata</h2>
+
+    <label for="title">Title</label>
+    <input id="title" name="title" value="{{ doc.title }}"
+           maxlength="500" class="w-full" required>
+
+    <label for="category">Category</label>
+    <input id="category" name="category" value="{{ doc.category }}"
+           maxlength="100">
+
+    <button type="submit">Save metadata</button>
+  </form>
+
+  <form method="post" class="card">
+    {% csrf_token %}
+    <h2>Retry processing</h2>
+    <p>Retries reuse the stored original file.</p>
+    <button type="submit" name="action" value="retry">
+      Queue ingestion retry
+    </button>
+  </form>
+
+  <form method="post" class="card">
+    {% csrf_token %}
+    <h2>Remove from collection</h2>
+
+    <p>
+      Removal deletes metadata and indexed passages.
+      Original files remain on disk for recovery.
+    </p>
+
+    <label for="confirm-remove">
+      <input id="confirm-remove" type="checkbox"
+             name="confirm_remove" value="yes" required>
+      I understand that this removes the document from the search collection.
+    </label>
+
+    <button type="submit" name="action" value="delete">
+      Remove document
+    </button>
+  </form>
+
+  {% if source_error %}
+    <p class="error">Unable to read LaTeX source: {{ source_error }}</p>
+  {% endif %}
+
+  {% if source_text %}
+    <section class="card">
+      <h2>LaTeX source</h2>
+      <p>
+        Showing at most 200,000 characters.
+        Open the original file to inspect the complete source.
+      </p>
+      <pre class="source-text">{{ source_text }}</pre>
+    </section>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,30 @@
+{% load tailwind_tags %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} — LocalRAG</title>
+  {% tailwind_css %}
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <div class="max-w-5xl mx-auto p-6">
+    <nav aria-label="Main navigation"
+         class="flex flex-wrap gap-4 border-b pb-4 mb-6">
+      <a href="/">Library</a>
+      <a href="/search/">Search</a>
+      <a href="/ask/">Ask</a>
+      <a href="/status/">Index status</a>
+      <a href="/settings/">Settings</a>
+      <a href="http://localhost:3000/">Grafana monitoring</a>
+    </nav>
+
+    <main id="main" tabindex="-1">
+      <h1 class="text-2xl font-bold">{{ title }}</h1>
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

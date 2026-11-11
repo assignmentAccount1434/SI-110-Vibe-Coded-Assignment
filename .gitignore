@@ -1,0 +1,62 @@
+# Credentials and local environment configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Documents, imported collections, datasets, and backups
+/documents/
+/imports/
+/benchmarks/
+/backups/
+
+# Local model files, if stored inside the project
+/models/
+/ollama/
+
+# Python environments and generated files
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Generated Django static files
+/staticfiles/
+/theme/static/css/dist/
+
+# Node dependencies and generated Tailwind output
+node_modules/
+/theme/static_src/output.css
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+/tmp/
+
+# Local patch backups
+*.before-nul-fix
+*.bak
+
+# Database dumps
+*.dump
+*.sql.gz
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+# Personal editor configuration
+.vscode/
+.idea/

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <p class="warning">
+    This application reports what local documents state.
+    It does not verify current law or fetch external authorities.
+    Research current law independently.
+  </p>
+
+  <form method="post" class="card">
+    {% csrf_token %}
+
+    <label for="question">Question</label>
+    <textarea id="question" name="question" rows="4"
+              maxlength="2000" class="w-full" required>{{ question }}</textarea>
+
+    <details class="document-picker">
+      <summary>Restrict the question to selected documents</summary>
+      <p>No selection searches the entire collection.</p>
+
+      <fieldset>
+        <legend>Documents to use</legend>
+        <div class="document-options">
+          {% for doc in documents %}
+            <label for="ask-doc-{{ doc.pk }}">
+              <input id="ask-doc-{{ doc.pk }}" type="checkbox"
+                     name="documents" value="{{ doc.pk }}"
+                     {% if doc.pk in selected %}checked{% endif %}>
+              {{ doc.filename }}
+            </label>
+          {% empty %}
+            <p>No documents available.</p>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </details>
+
+    <button type="submit">Generate grounded answer</button>
+
+    <p>
+      Generation runs during this request and may take time.
+      Avoid resubmitting while it is running.
+    </p>
+  </form>
+
+  {% if error %}
+    <p class="error" role="alert">Question answering failed: {{ error }}</p>
+  {% endif %}
+
+  {% if data %}
+    <section class="card" aria-label="Generated answer">
+      <h2>Answer — {{ data.status }}</h2>
+      <p class="answer-text">{{ data.supported_answer }}</p>
+
+      {% if data.interpretation %}
+        <h3>Model interpretation</h3>
+        <p class="answer-text">{{ data.interpretation }}</p>
+      {% endif %}
+
+      {% if data.citations %}
+        <h3>Cited evidence</h3>
+        <ul>
+          {% for citation in data.citations %}
+            <li>
+              <a href="#evidence-{{ citation }}">
+                Inspect evidence {{ citation }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <p>
+        Citation IDs are validated against the evidence supplied to the model.
+        This does not independently establish that every claim is supported.
+        Inspect cited passages.
+      </p>
+    </section>
+
+    <h2>Retrieved evidence</h2>
+
+    {% for result in results %}
+      <article class="card" id="evidence-{{ result.citation }}">
+        <h3>
+          {{ result.citation }} —
+          {% if result.used %}
+            cited by answer
+          {% else %}
+            retrieved, not cited
+          {% endif %}
+        </h3>
+
+        <a href="{{ result.url }}">
+          {{ result.chunk.document.filename }}
+          {% if result.stale %}
+            — inspect indexing status
+          {% elif result.chunk.document.format == "pdf" %}
+            — page {{ result.chunk.page }}
+          {% else %}
+            — LaTeX source
+          {% endif %}
+        </a>
+
+        {% if result.stale %}
+          <p class="warning">
+            This evidence belongs to a previously indexed file version.
+          </p>
+        {% endif %}
+
+        <pre class="source-text">{{ result.context }}</pre>
+      </article>
+    {% endfor %}
+  {% endif %}
+{% endblock %}

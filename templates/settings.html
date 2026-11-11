@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% if notice %}<p role="status">{{ notice }}</p>{% endif %}
+
+  <p>
+    The DOCUMENT_ROOT entry in .env selects the host storage directory.
+    This form chooses a subdirectory within that mount.
+    Saving settings does not move existing files.
+  </p>
+
+  <form method="post" class="card">
+    {% csrf_token %}
+
+    <label for="upload_subdir">Upload subdirectory</label>
+    <input id="upload_subdir" name="upload_subdir"
+           value="{{ configuration.upload_subdir }}"
+           maxlength="200" required>
+
+    <label for="lexical_weight">BM25 fusion weight, from 0 to 1</label>
+    <input id="lexical_weight" name="lexical_weight"
+           type="number" min="0" max="1" step="0.05"
+           value="{{ configuration.lexical_weight }}" required>
+
+    <p>
+      The semantic weight is one minus the BM25 weight.
+      A value of 0.5 gives equal rank-fusion weights.
+    </p>
+
+    <label for="top_k">Retrieved contexts, from 1 to 8</label>
+    <input id="top_k" name="top_k" type="number"
+           min="1" max="8"
+           value="{{ configuration.top_k }}" required>
+
+    <h2>Timing targets</h2>
+
+    <label for="search_sla">Search target in seconds</label>
+    <input id="search_sla" name="search_sla"
+           type="number" min="0.1" max="86400" step="0.1"
+           value="{{ configuration.search_sla }}" required>
+
+    <label for="embedding_sla">Embedding target in seconds</label>
+    <input id="embedding_sla" name="embedding_sla"
+           type="number" min="0.1" max="86400" step="0.1"
+           value="{{ configuration.embedding_sla }}" required>
+
+    <label for="ingestion_sla">Ingestion target per document in seconds</label>
+    <input id="ingestion_sla" name="ingestion_sla"
+           type="number" min="0.1" max="86400" step="0.1"
+           value="{{ configuration.ingestion_sla }}" required>
+
+    <p>
+      Targets are monitored, not enforced cancellation deadlines.
+      Set realistic values after benchmarking your documents and hardware.
+    </p>
+
+    <button type="submit">Save settings</button>
+  </form>
+{% endblock %}

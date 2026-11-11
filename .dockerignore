@@ -1,0 +1,9 @@
+.git
+.env
+documents
+imports
+benchmarks
+backups
+.venv
+__pycache__
+*.pyc
