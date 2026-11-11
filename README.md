@@ -1,7 +1,5 @@
 # Starting the project’s Docker containers
 
-These steps assume you have saved all five file groups, applied the revised Dockerfile and NUL-character fix, and installed Docker.
-
 Run commands from your **normal user account**, not a root shell. Your `scripts/compose.sh` wrapper either uses `sudo` internally or uses your account’s Docker-group access, depending on which version you saved.
 
 ## 1. Open a terminal and enter the project directory
